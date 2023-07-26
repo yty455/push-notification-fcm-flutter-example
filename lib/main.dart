@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 Future<void> myBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -23,6 +24,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  double _progress = 0;
+  late InAppWebViewController inAppWebViewController;
+
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -96,26 +100,47 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flutter FCM Notification'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text(
-              "FCM TOKEN:",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 15),
-            Text(
-              fcmToken,
-              style: const TextStyle(fontSize: 18),
-            ),
-          ],
+    return WillPopScope(
+      onWillPop: () async {
+        var isLastPage = await inAppWebViewController.canGoBack();
+
+        if (isLastPage) {
+          inAppWebViewController.goBack();
+          return false;
+        }
+
+        return true;
+      },
+      child: SafeArea(
+        bottom: false,
+        child: Scaffold(
+          body: Stack(
+            children: [
+              InAppWebView(
+                initialUrlRequest:
+                URLRequest(url: Uri.parse("http://172.26.192.1:8080")),
+                onWebViewCreated: (InAppWebViewController controller) {
+                  inAppWebViewController = controller;
+                  // 자바스크립트 채널 연결
+                  inAppWebViewController.addJavaScriptHandler(handlerName: 'handleFoo', callback: (args) { print("나 왔어"); return{'fcmT':fcmToken};});
+                },
+
+                onProgressChanged:
+                    (InAppWebViewController controller, int progress) {
+                  setState(() {
+                    _progress = progress / 100;
+                  });
+                },
+              ),
+              _progress < 1
+                  ? Container(
+                child: LinearProgressIndicator(
+                  value: _progress,
+                ),
+              )
+                  : const SizedBox()
+            ],
+          ),
         ),
       ),
     );
