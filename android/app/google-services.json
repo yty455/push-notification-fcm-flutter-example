@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "249586473337",
-    "project_id": "blooming-dc332",
-    "storage_bucket": "blooming-dc332.appspot.com"
+    "project_number": "1071258020020",
+    "project_id": "blooming-18b74",
+    "storage_bucket": "blooming-18b74.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:249586473337:android:a8803194170497a3d7b7a8",
+        "mobilesdk_app_id": "1:1071258020020:android:a652842d95439662210fe1",
         "android_client_info": {
           "package_name": "com.example.push_notification_fcm_example"
         }
       },
       "oauth_client": [
         {
-          "client_id": "249586473337-mfremv4nn72flnuhjgdlrehf1mrq135v.apps.googleusercontent.com",
+          "client_id": "1071258020020-n232o0v3t5bc7gur408eo58uj98dt6l3.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCafqzVXocz7HFkYxIu5zsWaL7r7uaoi04"
+          "current_key": "AIzaSyBhbNcyZe31lDXY8mFsOszxrwH8cvzQH7s"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "249586473337-mfremv4nn72flnuhjgdlrehf1mrq135v.apps.googleusercontent.com",
+              "client_id": "1071258020020-n232o0v3t5bc7gur408eo58uj98dt6l3.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

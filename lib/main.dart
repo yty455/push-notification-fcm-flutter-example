@@ -118,7 +118,7 @@ class _MyAppState extends State<MyApp> {
             children: [
               InAppWebView(
                 initialUrlRequest:
-                URLRequest(url: Uri.parse("http://172.26.192.1:8080")),
+                URLRequest(url: Uri.parse("http://43.200.254.50:80")),
                 onWebViewCreated: (InAppWebViewController controller) {
                   inAppWebViewController = controller;
                   // 자바스크립트 채널 연결
