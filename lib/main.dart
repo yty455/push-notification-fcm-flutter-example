@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +36,10 @@ class _MyAppState extends State<MyApp> {
 
   String fcmToken = "Getting Firebase Token";
 
+  void sendFcmTokenToWeb(String token){
+    inAppWebViewController.evaluateJavascript(source: 'receiveFcmToken("${json.encode(token)}");');
+  }
+
   @override
   void initState() {
     _initialNotification();
@@ -52,6 +58,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       fcmToken = token!;
       print(fcmToken);
+      sendFcmTokenToWeb(fcmToken);
     });
   }
 
@@ -123,6 +130,15 @@ class _MyAppState extends State<MyApp> {
                   inAppWebViewController = controller;
                   // 자바스크립트 채널 연결
                   inAppWebViewController.addJavaScriptHandler(handlerName: 'handleFoo', callback: (args) { print("나 왔어"); return{'fcmT':fcmToken};});
+                },
+
+                //파일 첨부 권한 요청
+                androidOnPermissionRequest:
+                    (InAppWebViewController controller, String origin,
+                    List<String> resources) async {
+                  return PermissionRequestResponse(
+                      resources: resources,
+                      action: PermissionRequestResponseAction.GRANT);
                 },
 
                 onProgressChanged:
