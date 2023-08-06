@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 Future<void> myBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -17,6 +18,18 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(myBackgroundHandler);
   runApp(const MaterialApp(home: MyApp(),));
 }
+
+// 권한 요청 코드
+void callPermissions() async {
+  Map<Permission, PermissionStatus> statuses = await [
+    Permission.notification,
+    Permission.storage,
+  ].request();
+
+  print(statuses[Permission.notification]?.isGranted);
+  print(statuses[Permission.location]?.isGranted);
+}
+
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -127,6 +140,7 @@ class _MyAppState extends State<MyApp> {
                 initialUrlRequest:
                 URLRequest(url: Uri.parse("http://43.200.254.50:80")),
                 onWebViewCreated: (InAppWebViewController controller) {
+                  callPermissions();
                   inAppWebViewController = controller;
                   // 자바스크립트 채널 연결
                   inAppWebViewController.addJavaScriptHandler(handlerName: 'handleFoo', callback: (args) { print("나 왔어"); return{'fcmT':fcmToken};});
@@ -148,6 +162,7 @@ class _MyAppState extends State<MyApp> {
                   });
                 },
               ),
+
               _progress < 1
                   ? Container(
                 child: LinearProgressIndicator(
