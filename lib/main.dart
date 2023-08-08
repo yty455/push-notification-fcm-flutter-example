@@ -161,7 +161,13 @@ class _MyAppState extends State<MyApp> {
                   // 자바스크립트 채널 연결
                   inAppWebViewController.addJavaScriptHandler(handlerName: 'handleFoo', callback: (args) { print("나 왔어"); return{'fcmT':fcmToken};});
                 },
-
+                initialOptions: InAppWebViewGroupOptions(
+                    crossPlatform: InAppWebViewOptions(
+                        useShouldOverrideUrlLoading: true,
+                        verticalScrollBarEnabled: true,
+                        userAgent: 'Mozilla/5.0 (Linux; Android 9; LG-H870 Build/PKQ1.190522.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.106 Mobile Safari/537.36'
+                    ),
+                ),
                 //파일 첨부 권한 요청
                 androidOnPermissionRequest:
                     (InAppWebViewController controller, String origin,
