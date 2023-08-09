@@ -65,7 +65,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   double _progress = 0;
   late InAppWebViewController inAppWebViewController;
-
+  static const platform = const MethodChannel('intent');
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -75,16 +75,6 @@ class _MyAppState extends State<MyApp> {
 
   void sendFcmTokenToWeb(String token){
     inAppWebViewController.evaluateJavascript(source: 'receiveFcmToken("${json.encode(token)}");');
-  }
-
-  static const methodChannel = MethodChannel('Channel Name');
-  bool isAppLink(Uri url) {
-    final appScheme = url.scheme;
-
-    return appScheme != 'http' &&
-        appScheme != 'https' &&
-        appScheme != 'about:blank' &&
-        appScheme != 'data';
   }
 
   @override
@@ -188,6 +178,26 @@ class _MyAppState extends State<MyApp> {
                   // 자바스크립트 채널 연결
                   inAppWebViewController.addJavaScriptHandler(handlerName: 'handleFoo', callback: (args) { print("나 왔어"); return{'fcmT':fcmToken};});
                 },
+                // InAppWebView 컴포넌트 내
+                shouldOverrideUrlLoading:
+                    (controller, NavigationAction navigationAction) async {
+                  var uri = navigationAction.request.url!;
+                  if (uri.scheme == 'intent') {
+                    try {
+                      var result = await platform
+                          .invokeMethod('launchKakaoTalk', {'url': uri.toString()});
+                      if (result != null) {
+                        await controller?.loadUrl(
+                            urlRequest: URLRequest(url: Uri.parse(result)));
+                      }
+
+                    } catch (e) {
+                      print('url fail $e');
+                    }
+                    return NavigationActionPolicy.CANCEL;
+                  }
+                  return NavigationActionPolicy.ALLOW;
+                },
                 initialOptions: InAppWebViewGroupOptions(
                     crossPlatform: InAppWebViewOptions(
                         javaScriptEnabled: true,
@@ -206,73 +216,6 @@ class _MyAppState extends State<MyApp> {
                       resources: resources,
                       action: PermissionRequestResponseAction.GRANT);
                 },
-                // shouldOverrideUrlLoading: (controller, navigationAction) async {
-                //   var uri = navigationAction.request.url;
-                //
-                //   if (uri.scheme == 'intent') {
-                //     // "intent:" URL 처리 로직
-                //     // ...
-                //     return ShouldOverrideUrlLoadingAction.CANCEL;
-                //   }
-                //
-                //   // 나머지 서비스 로직 구현
-                //
-                //   return ShouldOverrideUrlLoadingAction.ALLOW;
-                // },
-                // shouldOverrideUrlLoading: (controller, navigationAction) async {
-                //
-                //   print('====================shouldOverrideUrlLoading====================');
-                //   var curUrl = navigationAction.request.url;
-                //
-                //   if (curUrl == null) return NavigationActionPolicy.CANCEL;
-                //
-                //   // URL String의 Shceme가 http, https 가 아닌 지 검거
-                //   if (isAppLink(curUrl)) {
-                //     await controller.stopLoading();
-                //
-                //     var scheme = curUrl.scheme;
-                //
-                //     if (scheme == "intent") {        // 일반적인 Intent의 경우
-                //       if (Platform.isAndroid) {
-                //         try {
-                //           final parsedIntent = await methodChannel.invokeMethod('getAppUrl', {'url': curUrl.toString()});
-                //           print(parsedIntent);
-                //
-                //           if (await canLaunchUrl(Uri.parse(parsedIntent))) {
-                //             launchUrl(parsedIntent);
-                //           } else {
-                //             final marketUrl = await methodChannel.invokeMethod('getMarketUrl', {'url': curUrl.toString()});
-                //             launchUrl(marketUrl);
-                //           }
-                //         } on PlatformException catch (e) {
-                //           // 오류 처리
-                //           print('${e.message}');
-                //         }
-                //       }
-                //     } else if (scheme.contains('snssdk')) {    // TikTok 인경우 이미 파싱이 되어진 상태로 넘어온다. 따라서, 실행가능여부 검사 후 실행 및 패키지 다운로드로 진행
-                //       if (Platform.isAndroid) {
-                //         try {
-                //           if (await canLaunchUrl(curUrl)) {
-                //             launchUrl(curUrl.toString());
-                //           } else {
-                //             launchUrl('market://details?id=com.ss.android.ugc.trill');
-                //           }
-                //         } on PlatformException catch (e) {
-                //           // 오류 처리
-                //           print('${e.message}');
-                //         }
-                //       }
-                //     }
-                //
-                //     return NavigationActionPolicy.CANCEL;
-                //   } else {
-                //     return NavigationActionPolicy.ALLOW;
-                //   }
-                //
-                //
-                //   print(
-                //       '====================shouldOverrideUrlLoading====================');
-                // },
                 onProgressChanged:
                     (InAppWebViewController controller, int progress) {
                   setState(() {
