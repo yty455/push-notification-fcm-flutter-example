@@ -182,7 +182,7 @@ class _MyAppState extends State<MyApp> {
                 shouldOverrideUrlLoading:
                     (controller, NavigationAction navigationAction) async {
                   var uri = navigationAction.request.url!;
-                  if (uri.scheme == 'intent') {
+                  if (uri.scheme == 'intent' || uri.scheme == 'kakaotalk') {
                     try {
                       var result = await platform
                           .invokeMethod('launchKakaoTalk', {'url': uri.toString()});
@@ -205,7 +205,7 @@ class _MyAppState extends State<MyApp> {
                         useShouldOverrideUrlLoading: true,
                         verticalScrollBarEnabled: true,
                         useShouldInterceptFetchRequest: true,
-                        userAgent: 'Mozilla/5.0 (Linux; Android 9; LG-H870 Build/PKQ1.190522.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.106 Mobile Safari/537.36'
+                        userAgent: 'Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36'
                     ),
                 ),
                 //파일 첨부 권한 요청
