@@ -72,6 +72,8 @@ class _MyAppState extends State<MyApp> {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   String fcmToken = "Getting Firebase Token";
+  DateTime? _lastPressedAt; // To track back button presses
+
 
   void sendFcmTokenToWeb(String token){
     inAppWebViewController.evaluateJavascript(source: 'receiveFcmToken("${json.encode(token)}");');
@@ -87,7 +89,21 @@ class _MyAppState extends State<MyApp> {
       if (message.data.isNotEmpty) _showNotification(message, false);
     });
 
+    _localNotiSetting(); // Local notificiatioin 초기 설정
+
     getFCMToken();
+  }
+
+  void _localNotiSetting() async {
+    var androidInitializationSettings =AndroidInitializationSettings('@mipmap/ic_launcher');
+    // 안드로이드 알림 올 때 앱 아이콘 설정
+
+    // 만약에 사용자에게 앱 권한을 안 물어봤을 경우 이 셋팅으로 인해 permission check 함
+
+    var initsetting = InitializationSettings(
+        android: androidInitializationSettings);
+
+    await flutterLocalNotificationsPlugin.initialize(initsetting);
   }
 
   getFCMToken() async {
@@ -112,24 +128,43 @@ class _MyAppState extends State<MyApp> {
         ?.createNotificationChannel(channel);
 
     print(message.data);
+    print(message.notification?.title);
     Map<String, dynamic> data = message.data;
     AndroidNotification? android = message.notification?.android;
-    flutterLocalNotificationsPlugin.show(
-      0,
-      isFromBackground ? 'Description from background' : data['title'],
-      data['body'],
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          channel.id,
-          channel.name,
-          channelDescription: channel.description,
-          icon: android?.smallIcon,
-          // other properties...
-        ),
-        // iOS: IOSNotificationDetails(presentAlert: true, presentSound: true),
-      ),
-      payload: 'Default_Sound',
-    );
+    if(!isFromBackground){
+      flutterLocalNotificationsPlugin.show(
+            0,
+          message.notification?.title,
+          message.notification?.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel.id,
+                channel.name,
+                channelDescription: channel.description,
+                icon: android?.smallIcon,
+                // other properties...
+              ),
+              // iOS: IOSNotificationDetails(presentAlert: true, presentSound: true),
+            ),
+            payload: 'Default_Sound',
+          );
+    }
+    // flutterLocalNotificationsPlugin.show(
+    //   0,
+    //   isFromBackground ? 'Description from background' : data['title'],
+    //   data['body'],
+    //   NotificationDetails(
+    //     android: AndroidNotificationDetails(
+    //       channel.id,
+    //       channel.name,
+    //       channelDescription: channel.description,
+    //       icon: android?.smallIcon,
+    //       // other properties...
+    //     ),
+    //     // iOS: IOSNotificationDetails(presentAlert: true, presentSound: true),
+    //   ),
+    //   payload: 'Default_Sound',
+    // );
   }
 
   void _initialNotification() {
@@ -154,13 +189,24 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        var isLastPage = await inAppWebViewController.canGoBack();
-
-        if (isLastPage) {
-          inAppWebViewController.goBack();
+        // var isLastPage = await inAppWebViewController.canGoBack();
+        //
+        // if (isLastPage) {
+        //   inAppWebViewController.goBack();
+        //   return false;
+        // }
+        if (_lastPressedAt == null || DateTime.now().difference(_lastPressedAt!) > Duration(seconds: 2)) {
+          _lastPressedAt = DateTime.now();
+          // Show a toast or snackbar indicating that the user should press again to exit
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('한 번 더 누르면 앱이 종료됩니다.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
           return false;
         }
-
+        // If the back button was pressed twice within the given time, exit the app
         return true;
       },
       child: SafeArea(
@@ -170,13 +216,17 @@ class _MyAppState extends State<MyApp> {
             children: [
               InAppWebView(
                 initialUrlRequest:
-                URLRequest(url: Uri.parse("http://43.200.254.50:80")),
+                URLRequest(url: Uri.parse("https://i9e104.p.ssafy.io")),
                 onWebViewCreated: (InAppWebViewController controller) {
                   callPermissions();
                   _launchKotlinActivity();
                   inAppWebViewController = controller;
                   // 자바스크립트 채널 연결
                   inAppWebViewController.addJavaScriptHandler(handlerName: 'handleFoo', callback: (args) { print("나 왔어"); return{'fcmT':fcmToken};});
+                  // 추가: WebViewController에 포그라운드 상태에서 알림 받기 위한 리스너 생성
+                  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+                    _showNotification(message, false);
+                  });
                 },
                 // InAppWebView 컴포넌트 내
                 shouldOverrideUrlLoading:

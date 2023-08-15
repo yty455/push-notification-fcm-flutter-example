@@ -31,7 +31,7 @@ class MainActivity: FlutterActivity() {
                     result.success(null);
                 } else {
                     // Fallback URL이 있으면 현재 웹뷰에 로딩
-                    val fallbackUrl = intent.getStringExtra("http://43.200.254.50/login")
+                    val fallbackUrl = intent.getStringExtra("https://i9e104.p.ssafy.io")
                     if (fallbackUrl != null) {
                         result.success(fallbackUrl);
                     }
