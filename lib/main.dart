@@ -195,13 +195,13 @@ class _MyAppState extends State<MyApp> {
         //   inAppWebViewController.goBack();
         //   return false;
         // }
-        if (_lastPressedAt == null || DateTime.now().difference(_lastPressedAt!) > Duration(seconds: 2)) {
+        if (_lastPressedAt == null || DateTime.now().difference(_lastPressedAt!) > Duration(seconds: 1)) {
           _lastPressedAt = DateTime.now();
           // Show a toast or snackbar indicating that the user should press again to exit
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('한 번 더 누르면 앱이 종료됩니다.'),
-              duration: Duration(seconds: 2),
+              duration: Duration(seconds: 1),
             ),
           );
           return false;
